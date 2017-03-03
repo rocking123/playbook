@@ -1,0 +1,39 @@
+---
+- hosts: target
+  sudo: yes
+#  vars_files:
+#    - "vars/default_var.yml"
+  environment:
+    OS_IDENTITY_API_VERSION: 3
+    OS_AUTH_URL: http://10.0.5.90:5000/v3
+    OS_DEFAULT_DOMAIN: default
+    OS_USERNAME: admin
+    OS_PASSWORD: pass
+    OS_PROJECT_NAME: admin
+  tasks:
+    - name: Installs openstackclient package 
+      apt: pkg=python-openstackclient state=installed update_cache=true
+
+    - name: taking default FLAVOR_ID
+      shell: openstack flavor list -f value -c ID|head -1
+      register: default_FLAVOR_ID
+
+    - name: taking defualt IMAGE_ID
+      shell: openstack image list -f value -c ID | head -1
+      register: default_IMAGE_ID
+  
+    - name: taking default KEY_NAME
+      shell: openstack keypair list -f value -c Name | head -1
+      register: default_KEY_NAME
+
+    - name: taking default security groups
+      shell: openstack security group list -f value -c Name | head -1
+      register: default_SEC_GROUP_NAME
+
+    - name: launch openstack instances
+      shell: openstack server create --flavor {{ default_FLAVOR_ID.stdout }} --image {{ default_IMAGE_ID.stdout }} --key-name {{ default_KEY_NAME.stdout }}  --security-group {{ default_SEC_GROUP_NAME.stdout }} --user-data files/startup.sh firstVM
+
+    - name: launch openstack instances that will use add jumpbox
+      shell: openstack server create --flavor {{ default_FLAVOR_ID.stdout }} --image {{ default_IMAGE_ID.stdout }} --key-name {{ default_KEY_NAME.stdout }}  --security-group {{ default_SEC_GROUP_NAME.stdout }}  JumpboxVM
+
+ 
