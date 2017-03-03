@@ -1,0 +1,4 @@
+[target]
+
+localhost              ansible_connection=local
+#other1.example.com     ansible_connection=ssh        ansible_user=test
